@@ -5,8 +5,10 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/gopaljee023/gomicroservices/product-api/data"
+	"github.com/gorilla/mux"
 )
 
 type Products struct {
@@ -28,7 +30,7 @@ func (p *Products) GetProducts(rw http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (p *Products) addProducts(rw http.ResponseWriter, r *http.Request) {
+func (p *Products) AddProduct(rw http.ResponseWriter, r *http.Request) {
 
 	p.l.Println("Handle a post request")
 
@@ -50,7 +52,13 @@ func (p *Products) addProducts(rw http.ResponseWriter, r *http.Request) {
 	data.AddProduct(prod)
 
 }
-func (p *Products) updateProducts(id int, rw http.ResponseWriter, r *http.Request) {
+func (p *Products) UpdateProducts(rw http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		http.Error(rw, "Unable to convert Id", http.StatusBadRequest)
+	}
+
 	p.l.Println("Handle a update/put request")
 	prod := &data.Product{} // correct
 	bytes, _ := ioutil.ReadAll(r.Body)
@@ -59,7 +67,7 @@ func (p *Products) updateProducts(id int, rw http.ResponseWriter, r *http.Reques
 
 	//err := prod.FromJSON(r.Body) //not working ..don't know why
 
-	err := json.Unmarshal(bytes, prod)
+	err = json.Unmarshal(bytes, prod)
 	if err != nil {
 		p.l.Println("Unable to unmarshal json: will report ui")
 		http.Error(rw, "Unable to unmarshal json", http.StatusBadRequest)
