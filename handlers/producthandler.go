@@ -2,12 +2,9 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
-	"regexp"
-	"strconv"
 
 	"github.com/gopaljee023/gomicroservices/product-api/data"
 )
@@ -20,65 +17,7 @@ func NewProduct(l *log.Logger) *Products {
 	return &Products{l}
 }
 
-func (p *Products) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
-	//Get: $curl localhost:9090/ -v
-	if req.Method == http.MethodGet {
-		p.getProducts(rw, req)
-		return
-	}
-
-	//POST:curl -d '{ "id":1,"name":"tea","price": 3.4,"sku":"23211dd"}' localhost:9090
-	if req.Method == http.MethodPost {
-		p.addProducts(rw, req)
-
-		return
-	}
-
-	//delete method $curl localhost:9090 -XDELETE $curl localhost:9090 -XDELETE -v
-	if req.Method == http.MethodDelete {
-		p.deleteProducts(rw, req)
-		return
-	}
-
-	//put method
-	if req.Method == http.MethodPut {
-		//extrac the id from the URI..  using mux .. it is easy
-		reg := regexp.MustCompile(`/([0-9]+)`)
-		groups := reg.FindAllStringSubmatch(req.URL.Path, -1)
-
-		if len(groups) != 1 {
-			p.l.Println("Novalid URI more than one id")
-			http.Error(rw, "Invalid URI", http.StatusBadRequest)
-			return
-		}
-
-		fmt.Printf("capture groups %q\n", groups)
-		//Q. why there will be two capture group
-		if len(groups[0]) != 2 {
-			p.l.Println("Novalid URI more than capture group")
-			http.Error(rw, "Invalid URI", http.StatusBadRequest)
-			return
-		}
-
-		idString := groups[0][1]
-
-		id, err := strconv.Atoi(idString)
-		if err != nil {
-			p.l.Println("Not able to ")
-			http.Error(rw, "Invalid URI", http.StatusBadRequest)
-			return
-		}
-
-		fmt.Println("received id is ", id)
-		p.updateProducts(id, rw, req)
-		return
-	}
-
-	//catch all other
-	rw.WriteHeader(http.StatusMethodNotAllowed)
-}
-
-func (p *Products) getProducts(rw http.ResponseWriter, r *http.Request) {
+func (p *Products) GetProducts(rw http.ResponseWriter, r *http.Request) {
 
 	//lp listof produt
 	lp := data.GetProducts()
