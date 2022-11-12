@@ -28,8 +28,8 @@ func (ps *Products) ToJSON(w io.Writer) error {
 
 // correct
 func (p *Product) FromJSON(r io.Reader) error {
-	d := json.NewDecoder(r)
-	return d.Decode(p)
+	e := json.NewDecoder(r)
+	return e.Decode(p)
 }
 
 var productList = []*Product{
@@ -43,7 +43,7 @@ var productList = []*Product{
 		UpdatedOn:   time.Now().UTC().String(),
 	},
 	&Product{
-		ID:          1,
+		ID:          2,
 		Name:        "Espressoo",
 		Description: "Short and strong coffee without milk",
 		Price:       3.45,

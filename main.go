@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/gopaljee023/gomicroservices/handlers"
+	"github.com/gorilla/mux"
 )
 
 func main() {
@@ -18,8 +19,25 @@ func main() {
 
 	ph := handlers.NewProduct(l)
 
-	sm := http.NewServeMux()
-	sm.Handle("/", ph)
+	sm := mux.NewRouter()
+
+	//curl get:
+	/*curl localhost:9090 */
+	getRouter := sm.Methods("GET").Subrouter()
+	getRouter.HandleFunc("/", ph.GetProducts)
+
+	//curl command:
+	/*
+		curl localhost:9090/1 -XPUT -d
+		'{"name":"juice with capcunio ", "description":" coffee one", "price":1.45, "sku":"akkdc"}'
+	*/
+	putRouter := sm.Methods(http.MethodPut).Subrouter()
+	putRouter.HandleFunc("/{id:[0-9]+}", ph.UpdateProducts)
+	putRouter.Use(ph.MiddlewareValidateProduct) ////this will be executed before the ph.UpdateProducts
+
+	postRouter := sm.Methods(http.MethodPost).Subrouter()
+	postRouter.HandleFunc("/", ph.AddProduct)
+	postRouter.Use(ph.MiddlewareValidateProduct) //this will be executed before the ph.AddProduct
 
 	s := &http.Server{
 		Addr:         ":9090",
